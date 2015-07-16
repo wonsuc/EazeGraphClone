@@ -25,6 +25,25 @@ import android.graphics.RectF;
  */
 public class BarModel extends BaseModel implements Comparable {
 
+    /**
+     * 해당 Bar의 값
+     */
+    private float mValue;
+
+    /**
+     * Color in which the bar will be drawn.
+     */
+    private int mColor;
+
+    /**
+     * Bar 경계영역
+     */
+    private RectF mBarBounds;
+
+    private boolean mShowValue = false;
+
+    private Rect mValueBounds = new Rect();
+
     public BarModel(String _legendLabel, float _value, int _color) {
         super(_legendLabel);
         mValue = _value;
@@ -97,22 +116,4 @@ public class BarModel extends BaseModel implements Comparable {
         }
     }
 
-    /**
-     * Value of the bar.
-     */
-    private float mValue;
-
-    /**
-     * Color in which the bar will be drawn.
-     */
-    private int mColor;
-
-    /**
-     * Bar boundaries.
-     */
-    private RectF mBarBounds;
-
-    private boolean mShowValue = false;
-
-    private Rect mValueBounds = new Rect();
 }

@@ -44,6 +44,7 @@ public class StackedBarModel extends BaseModel {
         mBars = _bars;
     }
 
+    // Stack Bar는 한마디로 여러개의 Bar들의 집합이다.
     public void addBar(BarModel _bar) {
         mBars.add(_bar);
     }

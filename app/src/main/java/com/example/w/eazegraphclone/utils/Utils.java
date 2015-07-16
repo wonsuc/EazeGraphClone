@@ -32,15 +32,16 @@ import com.example.w.eazegraphclone.models.Point2D;
 import java.util.List;
 
 /**
- * A helper class which consists of static helper methods.
+ * static helper method들로 구성된 Helper class
  */
 public class Utils {
 
+    private static final String LOG_TAG = Utils.class.getSimpleName();
+
     /**
-     * Converts density-independent pixel (dp) to pixel (px)
+     * DP를 PX로 변환하기
      *
      * @param _Dp the dp value to convert in pixel
-     *
      * @return the converted value in pixels
      */
     public static float dpToPx(float _Dp) {
@@ -155,7 +156,7 @@ public class Utils {
     }
 
     /**
-     * Calculates the maximum text height which is possible based on the used Paint and its settings.
+     * 사용되어진 Paint와 그 Paint의 설정을 기반으로 가능한 특정 텍스트의 가능한 최대값의 높이를 반환한다.
      *
      * @param _Paint Paint object which will be used to display a text.
      * @param _Text  The text which should be measured. If null, a default text is chosen, which
@@ -182,6 +183,8 @@ public class Utils {
     }
 
 
+
+
     @SuppressLint("NewApi")
     public static void setLayerToSW(View v) {
         if (!v.isInEditMode() && Build.VERSION.SDK_INT >= 11) {
@@ -196,77 +199,4 @@ public class Utils {
         }
     }
 
-    /**
-     * Returns the x-scale component of the _Matrix
-     * @param _Matrix A float 3x3 matrix
-     * @return X-Scale
-     */
-    public static float getScaleX(float[] _Matrix) {
-        return _Matrix[0];
-    }
-
-    /**
-     * Returns the y-scale component of the _Matrix
-     * @param _Matrix A float 3x3 matrix
-     * @return Y-Scale
-     */
-    public static float getScaleY(float[] _Matrix) {
-        return _Matrix[4];
-    }
-
-    /**
-     * Returns the x-translation component of the _Matrix
-     * @param _Matrix A float 3x3 matrix
-     * @return X-Translation
-     */
-    public static float getTranslationX(float[] _Matrix) {
-        return _Matrix[2];
-    }
-
-    /**
-     * Returns the y-translation component of the _Matrix
-     * @param _Matrix A float 3x3 matrix
-     * @return Y-Translation
-     */
-    public static float getTranslationY(float[] _Matrix) {
-        return _Matrix[5];
-    }
-
-    /**
-     * Sets the x-scale component in a 3x3 matrix
-     * @param _Value        The value which will be set
-     * @param _DestMatrix   The matrix where the value will be saved
-     */
-    public static void setScaleX(float _Value, float[] _DestMatrix) {
-        _DestMatrix[0] = _Value;
-    }
-
-    /**
-     * Sets the y-scale component in a 3x3 matrix
-     * @param _Value        The value which will be set
-     * @param _DestMatrix   The matrix where the value will be saved
-     */
-    public static void setScaleY(float _Value, float[] _DestMatrix) {
-        _DestMatrix[4] = _Value;
-    }
-
-    /**
-     * Sets the x-translation component in a 3x3 matrix
-     * @param _Value        The value which will be set
-     * @param _DestMatrix   The matrix where the value will be saved
-     */
-    public static void setTranslationX(float _Value, float[] _DestMatrix) {
-        _DestMatrix[2] = _Value;
-    }
-
-    /**
-     * Sets the y-translation component in a 3x3 matrix
-     * @param _Value        The value which will be set
-     * @param _DestMatrix   The matrix where the value will be saved
-     */
-    public static void setTranslationY(float _Value, float[] _DestMatrix) {
-        _DestMatrix[5] = _Value;
-    }
-
-    private static final String LOG_TAG = Utils.class.getSimpleName();
 }

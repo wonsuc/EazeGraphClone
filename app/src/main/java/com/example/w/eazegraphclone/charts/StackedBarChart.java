@@ -24,12 +24,26 @@ import java.util.List;
  * heights are dependent on each other.
  */
 public class StackedBarChart extends BaseBarChart {
-    /**
-     * Simple constructor to use when creating a view from code.
-     *
-     * @param context The Context the view is running in, through which it can
-     *                access the current theme, resources, etc.
-     */
+
+    //##############################################################################################
+    // Variables
+    //##############################################################################################
+
+    private static final String LOG_TAG = StackedBarChart.class.getSimpleName();
+
+    public static final float   DEF_TEXT_SIZE       = 12f;
+    public static final boolean DEF_SHOW_SEPARATORS = false;
+    public static final float   DEF_SEPARATOR_WIDTH = 2f;
+
+    private Paint                  mSeperatorPaint;
+    private Paint                  mTextPaint;
+
+    private List<StackedBarModel>  mData;
+
+    private float                  mTextSize;
+    private boolean                mShowSeparators;
+    private float                  mSeparatorWidth;
+
     public StackedBarChart(Context context) {
         super(context);
 
@@ -40,22 +54,6 @@ public class StackedBarChart extends BaseBarChart {
         initializeGraph();
     }
 
-    /**
-     * Constructor that is called when inflating a view from XML. This is called
-     * when a view is being constructed from an XML file, supplying attributes
-     * that were specified in the XML file. This version uses a default style of
-     * 0, so the only attribute values applied are those in the Context's Theme
-     * and the given AttributeSet.
-     * <p/>
-     * <p/>
-     * The method onFinishInflate() will be called after all children have been
-     * added.
-     *
-     * @param context The Context the view is running in, through which it can
-     *                access the current theme, resources, etc.
-     * @param attrs   The attributes of the XML tag that is inflating the view.
-     * @see #View(android.content.Context, android.util.AttributeSet, int)
-     */
     public StackedBarChart(Context context, AttributeSet attrs) {
         super(context, attrs);
         TypedArray a = context.getTheme().obtainStyledAttributes(
@@ -63,22 +61,17 @@ public class StackedBarChart extends BaseBarChart {
                 R.styleable.StackedBarChart,
                 0, 0
         );
-
         try {
-
             mTextSize       = a.getDimension(R.styleable.StackedBarChart_egBarTextSize,     Utils.dpToPx(DEF_TEXT_SIZE));
             mShowSeparators = a.getBoolean(R.styleable.StackedBarChart_egShowSeparators,    DEF_SHOW_SEPARATORS);
             mSeparatorWidth = a.getDimension(R.styleable.StackedBarChart_egSeparatorWidth,  Utils.dpToPx(DEF_SEPARATOR_WIDTH));
-
         } finally {
             // release the TypedArray so that it can be reused.
             a.recycle();
         }
-
         initializeGraph();
     }
 
-    // TODO: Make method which returns the sp value
     /**
      * Returns the text size for the values which are shown in the bars.
      * @return The text size in px
@@ -96,43 +89,23 @@ public class StackedBarChart extends BaseBarChart {
         onDataChanged();
     }
 
-    /**
-     * Returns the current state if the separator between the bars are shown or not
-     * @return True if the separators are shown
-     */
     public boolean isShowSeparators() {
         return mShowSeparators;
     }
-
-    /**
-     * Sets the parameter if the separators between the bars should be shown or not
-     * @param _showSeparators True if the separators should be shown
-     */
     public void setShowSeparators(boolean _showSeparators) {
         mShowSeparators = _showSeparators;
         invalidateGlobal();
     }
-
-    // TODO: Make method which returns the sp value
-    /**
-     * Returns the separator width.
-     * @return The separator width in px.
-     */
     public float getSeparatorWidth() {
         return mSeparatorWidth;
     }
-
-    /**
-     * Sets the separator width.
-     * @param _separatorWidth The width in sp.
-     */
     public void setSeparatorWidth(float _separatorWidth) {
         mSeparatorWidth = _separatorWidth;
         onDataChanged();
     }
 
     /**
-     * Adds a new {@link org.eazegraph.lib.models.StackedBarModel} to the BarChart.
+     * Adds a new {@link StackedBarModel} to the BarChart.
      * @param _Bar The StackedBarModel which will be added to the chart.
      */
     public void addBar(StackedBarModel _Bar) {
@@ -141,7 +114,7 @@ public class StackedBarChart extends BaseBarChart {
     }
 
     /**
-     * Adds a new list of {@link org.eazegraph.lib.models.StackedBarModel} to the BarChart.
+     * Adds a new list of {@link StackedBarModel} to the BarChart.
      * @param _List The StackedBarModel list which will be added to the chart.
      */
     public void addBarList(List<StackedBarModel> _List) {
@@ -213,6 +186,7 @@ public class StackedBarChart extends BaseBarChart {
     }
 
     /**
+     * 새로운 데이타가 삽입되었을 때. 그리고 View의 Dimension이 변경되었을 때 자동으로 호출된다.
      * Should be called after new data is inserted. Will be automatically called, when the view dimensions
      * has changed.
      */
@@ -230,10 +204,11 @@ public class StackedBarChart extends BaseBarChart {
     protected void calculateBounds(float _Width, float _Margin) {
 
         int last = 0;
-
+        // 최상위 Loop문
         for (StackedBarModel model : mData) {
             float lastY = 0;
             float cumulatedValues = 0;
+
             // used if seperators are enabled, to prevent information loss
             int usableGraphHeight = mGraphHeight - (int) (mSeparatorWidth * (model.getBars().size() - 1));
 
@@ -243,11 +218,13 @@ public class StackedBarChart extends BaseBarChart {
 
             last += _Margin / 2;
 
+            // Loop문
             for (BarModel barModel : model.getBars()) {
                 // calculate topX for the StackedBarModel part
                 float newY = ((barModel.getValue() * usableGraphHeight) / cumulatedValues) + lastY;
                 float height = newY - lastY;
                 Rect textBounds = new Rect();
+                // 해당 Bar의 값
                 String value = String.valueOf(barModel.getValue());
 
                 mTextPaint.getTextBounds(value, 0, value.length(), textBounds);
@@ -270,7 +247,7 @@ public class StackedBarChart extends BaseBarChart {
 
     /**
      * Callback method for drawing the bars in the child classes.
-     * @param _Canvas The canvas object of the graph view.
+     * @param _Canvas 그래프 뷰의 Canvas 객체
      */
     protected void drawBars(Canvas _Canvas) {
         for (StackedBarModel model : mData) {
@@ -283,7 +260,7 @@ public class StackedBarChart extends BaseBarChart {
                 RectF bounds = barModel.getBarBounds();
                 mGraphPaint.setColor(barModel.getColor());
 
-                float height = (bounds.height() * mRevealValue);
+                float height = (bounds.height());
                 lastTop = lastBottom - height;
 
                 _Canvas.drawRect(
@@ -294,17 +271,19 @@ public class StackedBarChart extends BaseBarChart {
                         mGraphPaint
                 );
 
+                // mShowValues가 존재하고, isShowValue가 true일 때
                 if (mShowValues && barModel.isShowValue()) {
                     _Canvas.drawText(
                             String.valueOf(barModel.getValue()),
                             bounds.centerX(),
-                            (lastTop + height / 2) + barModel.getValueBounds().height()/2,
+                            (lastTop + height / 2) + barModel.getValueBounds().height()/2, // 바 높이의 절반 + ???
                             mTextPaint
                     );
                 }
 
                 lastBottom = lastTop;
 
+                // mShowSeparators가 존재하고
                 if (mShowSeparators && index < model.getBars().size() - 1) {
                     lastBottom -= mSeparatorWidth;
                 }
@@ -331,22 +310,4 @@ public class StackedBarChart extends BaseBarChart {
         return bounds;
     }
 
-    //##############################################################################################
-    // Variables
-    //##############################################################################################
-
-    private static final String LOG_TAG = StackedBarChart.class.getSimpleName();
-
-    public static final float   DEF_TEXT_SIZE       = 12f;
-    public static final boolean DEF_SHOW_SEPARATORS = false;
-    public static final float   DEF_SEPARATOR_WIDTH = 2f;
-
-    private Paint                  mSeperatorPaint;
-    private Paint                  mTextPaint;
-
-    private List<StackedBarModel>  mData;
-
-    private float                  mTextSize;
-    private boolean                mShowSeparators;
-    private float                  mSeparatorWidth;
 }

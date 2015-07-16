@@ -1,14 +1,9 @@
 package com.example.w.eazegraphclone.ui;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBarActivity;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.example.w.eazegraphclone.R;
 import com.example.w.eazegraphclone.charts.StackedBarChart;
@@ -20,10 +15,6 @@ import com.example.w.eazegraphclone.models.StackedBarModel;
 public class MainActivity extends ActionBarActivity {
 
     private StackedBarChart mStackedBarChart;
-
-    public MainActivity() {
-        // Required empty public constructor
-    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,12 +29,6 @@ public class MainActivity extends ActionBarActivity {
             }
         });
         loadData();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        //mStackedBarChart.startAnimation();
     }
 
     private void loadData() {
@@ -99,6 +84,7 @@ public class MainActivity extends ActionBarActivity {
         mStackedBarChart.addBar(s6);
         mStackedBarChart.addBar(s7);
         mStackedBarChart.addBar(s8);
+
     }
 
 }
