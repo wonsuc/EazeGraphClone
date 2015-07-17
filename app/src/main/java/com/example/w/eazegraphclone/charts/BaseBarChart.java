@@ -1,20 +1,3 @@
-/**
- *
- *   Copyright (C) 2015 Paul Cech
- *
- *   Licensed under the Apache License, Version 2.0 (the "License");
- *   you may not use this file except in compliance with the License.
- *   You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- */
-
 package com.example.w.eazegraphclone.charts;
 
 import android.content.Context;
@@ -23,26 +6,16 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.Build;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.widget.OverScroller;
-import android.widget.Scroller;
-
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.ValueAnimator;
 
 import com.example.w.eazegraphclone.R;
-import com.example.w.eazegraphclone.communication.IOnBarClickedListener;
 import com.example.w.eazegraphclone.models.BaseModel;
 import com.example.w.eazegraphclone.utils.Utils;
 
 import java.util.List;
 
 /**
- * The abstract class for every type of bar chart, which handles the general calculation for the bars.
+ * 모든 타입의 바 차트를 위한 추상 클래스. 바들의 일반적인 계산을 핸들한다.
  */
 public abstract class BaseBarChart extends BaseChart {
 
@@ -57,7 +30,6 @@ public abstract class BaseBarChart extends BaseChart {
     public static final float   DEF_BAR_WIDTH           = 32.f;
     public static final boolean DEF_FIXED_BAR_WIDTH     = false;
     public static final float   DEF_BAR_MARGIN          = 12.f;
-    public static final boolean DEF_SCROLL_ENABLED      = true;
     public static final int     DEF_VISIBLE_BARS        = 6;
 
     /**
@@ -81,8 +53,6 @@ public abstract class BaseBarChart extends BaseChart {
      * @see #mCurrentViewport
      */
     protected Rect mContentRect = new Rect();
-
-    protected IOnBarClickedListener mListener = null;
 
     protected Paint           mGraphPaint;
     protected Paint           mLegendPaint;
@@ -122,13 +92,6 @@ public abstract class BaseBarChart extends BaseChart {
             // release the TypedArray so that it can be reused.
             a.recycle();
         }
-    }
-
-    public IOnBarClickedListener getOnBarClickedListener() {
-        return mListener;
-    }
-    public void setOnBarClickedListener(IOnBarClickedListener _listener) {
-        mListener = _listener;
     }
 
     public float getBarWidth() {
@@ -243,12 +206,11 @@ public abstract class BaseBarChart extends BaseChart {
     }
 
     /**
-     * Calculates the bar width and bar margin based on the _DataSize and settings and starts the boundary
-     * calculation in child classes.
+     * Calculates the bar width and bar margin based on the _DataSize and settings and starts the boundary calculation in child classes.
      * @param _DataSize Amount of data sets
      */
     protected void calculateBarPositions(int _DataSize) {
-
+        // _DataSize는 StackedBarChart의 갯수를 의미한다.
         int   dataSize = _DataSize;
         float barWidth = mBarWidth;
         float margin   = mBarMargin;
@@ -263,12 +225,16 @@ public abstract class BaseBarChart extends BaseChart {
             }
 
             // calculate margin between bars if the bars have a fixed width
+            // cumulatedBarWidths는 바의 넓이와 바의 갯수를 곱한 값이다.
             float cumulatedBarWidths = barWidth * dataSize;
+            // remainingScreenSize는 총 스크린 넓이에서 그려진 바의 총 넓이를 빼고 남은 영역이다.
             float remainingScreenSize = mAvailableScreenSize - cumulatedBarWidths;
 
+            // 남은 영역들을 StackedBar의 갯수만큼 쪼갠다.
             margin = remainingScreenSize / dataSize;
         }
 
+        // barWidth에 _DataSize를 곱한 값과 margin에 _DataSize 곱한 값을 더한다. 따라서 contentWidth는 모든 ???
         int calculatedSize = (int) ((barWidth * _DataSize) + (margin * _DataSize));
         int contentWidth   = calculatedSize;
         int contentHeight  = mGraphHeight;
@@ -311,6 +277,7 @@ public abstract class BaseBarChart extends BaseChart {
     protected void onGraphDraw(Canvas _Canvas) {
         super.onGraphDraw(_Canvas);
         _Canvas.translate(-mCurrentViewport.left, -mCurrentViewport.top);
+        // 실제로 Bar를 그리는 것은 StackedBarChart이다.
         drawBars(_Canvas);
     }
 
@@ -332,39 +299,6 @@ public abstract class BaseBarChart extends BaseChart {
 //                );
             }
         }
-    }
-
-    // 특정 Bar를 터치했을 때의 Callback listener
-    @Override
-    protected boolean onGraphOverlayTouchEvent(MotionEvent _Event) {
-        boolean result = false;
-
-        switch (_Event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-
-                result = true;
-
-                if (mListener == null) {
-                    // 리스너가 세팅되어 있지 않으면 View의 터치 이벤트 발생시킴
-                    BaseBarChart.this.onTouchEvent(_Event);
-                } else {
-                    float newX = _Event.getX() + mCurrentViewport.left;
-                    float newY = _Event.getY() + mCurrentViewport.top;
-                    int   counter = 0;
-
-                    for (RectF rectF : getBarBounds()) {
-                        // Bar의 Bounds를 모두 가져와서 터치한 포인트와 교차하는지를 체크
-                        if (Utils.intersectsPointWithRectF(rectF, newX, newY)) {
-                            mListener.onBarClicked(counter);
-                            break;
-                        }
-                        counter++;
-                    }
-                }
-                break;
-        }
-
-        return result;
     }
 
     //endregion

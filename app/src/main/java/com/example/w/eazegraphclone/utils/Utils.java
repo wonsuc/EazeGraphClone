@@ -49,45 +49,6 @@ public class Utils {
     }
 
     /**
-     * Calculates the middle point between two points and multiplies its coordinates with the given
-     * smoothness _Mulitplier.
-     * @param _P1           First point
-     * @param _P2           Second point
-     * @param _Result       Resulting point
-     * @param _Multiplier   Smoothness multiplier
-     */
-    public static void calculatePointDiff(Point2D _P1, Point2D _P2, Point2D _Result, float _Multiplier) {
-        float diffX = _P2.getX() - _P1.getX();
-        float diffY = _P2.getY() - _P1.getY();
-        _Result.setX(_P1.getX() + (diffX * _Multiplier));
-        _Result.setY(_P1.getY() + (diffY * _Multiplier));
-    }
-
-    /**
-     * Helper method for translating (_X,_Y) scroll vectors into scalar rotation of a circle.
-     *
-     * @param _Dx The _X component of the current scroll vector.
-     * @param _Dy The _Y component of the current scroll vector.
-     * @param _X  The _X position of the current touch, relative to the circle center.
-     * @param _Y  The _Y position of the current touch, relative to the circle center.
-     * @return The scalar representing the change in angular position for this scroll.
-     */
-    public static float vectorToScalarScroll(float _Dx, float _Dy, float _X, float _Y) {
-        // get the length of the vector
-        float l = (float) Math.sqrt(_Dx * _Dx + _Dy * _Dy);
-
-        // decide if the scalar should be negative or positive by finding
-        // the dot product of the vector perpendicular to (_X,_Y).
-        float crossX = -_Y;
-        float crossY = _X;
-
-        float dot = (crossX * _Dx + crossY * _Dy);
-        float sign = Math.signum(dot);
-
-        return l * sign;
-    }
-
-    /**
      * Calculates the legend positions and which legend title should be displayed or not.
      *
      * Important: the LegendBounds in the _Models should be set and correctly calculated before this
@@ -103,39 +64,39 @@ public class Utils {
         // calculate the legend label positions and check if there is enough space to display the label,
         // if not the label will not be shown
         for (BaseModel model : _Models) {
-            if (!model.isIgnore()) {
-                Rect textBounds = new Rect();
-                RectF legendBounds = model.getLegendBounds();
 
-                _Paint.getTextBounds(model.getLegendLabel(), 0, model.getLegendLabel().length(), textBounds);
-                model.setTextBounds(textBounds);
+            Rect textBounds = new Rect();
+            RectF legendBounds = model.getLegendBounds();
 
-                float centerX = legendBounds.centerX();
-                float centeredTextPos = centerX - (textBounds.width() / 2);
-                float textStartPos = centeredTextPos - textMargin;
+            _Paint.getTextBounds(model.getLegendLabel(), 0, model.getLegendLabel().length(), textBounds);
+            model.setTextBounds(textBounds);
 
-                // check if the text is too big to fit on the screen
-                if (centeredTextPos + textBounds.width() > _EndX - textMargin) {
-                    model.setShowLabel(false);
-                } else {
-                    // check if the current legend label overrides the label before
-                    // if the label overrides the label before, the current label will not be shown.
-                    // If not the label will be shown and the label position is calculated
-                    if (textStartPos < lastX) {
-                        if (lastX + textMargin < legendBounds.left) {
-                            model.setLegendLabelPosition((int) (lastX + textMargin));
-                            model.setShowLabel(true);
-                            lastX = lastX + textMargin + textBounds.width();
-                        } else {
-                            model.setShowLabel(false);
-                        }
-                    } else {
+            float centerX = legendBounds.centerX();
+            float centeredTextPos = centerX - (textBounds.width() / 2);
+            float textStartPos = centeredTextPos - textMargin;
+
+            // check if the text is too big to fit on the screen
+            if (centeredTextPos + textBounds.width() > _EndX - textMargin) {
+                model.setShowLabel(false);
+            } else {
+                // check if the current legend label overrides the label before
+                // if the label overrides the label before, the current label will not be shown.
+                // If not the label will be shown and the label position is calculated
+                if (textStartPos < lastX) {
+                    if (lastX + textMargin < legendBounds.left) {
+                        model.setLegendLabelPosition((int) (lastX + textMargin));
                         model.setShowLabel(true);
-                        model.setLegendLabelPosition((int) centeredTextPos);
-                        lastX = centerX + (textBounds.width() / 2);
+                        lastX = lastX + textMargin + textBounds.width();
+                    } else {
+                        model.setShowLabel(false);
                     }
+                } else {
+                    model.setShowLabel(true);
+                    model.setLegendLabelPosition((int) centeredTextPos);
+                    lastX = centerX + (textBounds.width() / 2);
                 }
             }
+
         }
 
     }
@@ -169,21 +130,6 @@ public class Utils {
         _Paint.getTextBounds(text, 0, text.length(), height);
         return height.height();
     }
-
-    /**
-     * Checks if a point is in the given rectangle.
-     *
-     * @param _Rect rectangle which is checked
-     * @param _X    x-coordinate of the point
-     * @param _Y    y-coordinate of the point
-     * @return True if the points intersects with the rectangle.
-     */
-    public static boolean intersectsPointWithRectF(RectF _Rect, float _X, float _Y) {
-        return _X > _Rect.left && _X < _Rect.right && _Y > _Rect.top && _Y < _Rect.bottom;
-    }
-
-
-
 
     @SuppressLint("NewApi")
     public static void setLayerToSW(View v) {

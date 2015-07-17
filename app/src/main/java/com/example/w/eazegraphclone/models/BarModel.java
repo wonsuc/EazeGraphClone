@@ -21,9 +21,9 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 
 /**
- * Model for the {@link org.eazegraph.lib.charts.BarChart}
+ * Model for the BarChart}
  */
-public class BarModel extends BaseModel implements Comparable {
+public class BarModel extends BaseModel {
 
     /**
      * 해당 Bar의 값
@@ -31,7 +31,7 @@ public class BarModel extends BaseModel implements Comparable {
     private float mValue;
 
     /**
-     * Color in which the bar will be drawn.
+     * 해당 Bar의 색깔
      */
     private int mColor;
 
@@ -100,20 +100,6 @@ public class BarModel extends BaseModel implements Comparable {
 
     public void setValueBounds(Rect _valueBounds) {
         mValueBounds = _valueBounds;
-    }
-
-    @Override
-    public int compareTo(Object o) {
-        BarModel bar = (BarModel) o;
-        if (this.mValue > bar.getValue()) {
-            return 1;
-        }
-        else if (this.mValue == bar.getValue()) {
-            return 0;
-        }
-        else {
-            return -1;
-        }
     }
 
 }

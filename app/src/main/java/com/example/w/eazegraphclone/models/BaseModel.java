@@ -10,17 +10,17 @@ import android.graphics.RectF;
 public abstract class BaseModel {
 
     /**
-     * Label value
+     * Label의 값
      */
     protected String mLegendLabel;
 
     /**
-     * Indicates whether the label should be shown or not.
+     * Label을 보여줄 것인지 여부
      */
     protected boolean mShowLabel;
 
     /**
-     * X-coordinate of the label.
+     * 라벨의 X 좌표값
      */
     private int mLegendLabelPosition;
 
@@ -34,10 +34,6 @@ public abstract class BaseModel {
      */
     private Rect mTextBounds;
 
-    /**
-     * Indicates if the label should be ignored, when the boundaries are calculated.
-     */
-    private boolean mIgnore = false;
 
     protected BaseModel(String _legendLabel) {
         mLegendLabel = _legendLabel;
@@ -89,15 +85,6 @@ public abstract class BaseModel {
 
     public void setTextBounds(Rect _textBounds) {
         mTextBounds = _textBounds;
-    }
-
-
-    public boolean isIgnore() {
-        return mIgnore;
-    }
-
-    public void setIgnore(boolean _ignore) {
-        mIgnore = _ignore;
     }
 
 }

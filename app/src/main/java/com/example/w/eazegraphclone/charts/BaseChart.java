@@ -21,9 +21,9 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.PointF;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,7 +57,6 @@ public abstract class BaseChart extends ViewGroup {
     public static final String  DEF_EMPTY_DATA_TEXT     = "No Data available";
 
     protected Graph             mGraph;
-    protected GraphOverlay      mGraphOverlay;
     protected Legend            mLegend;
 
     protected int               mHeight;
@@ -218,7 +217,11 @@ public abstract class BaseChart extends ViewGroup {
         mBottomPadding  = getPaddingBottom();
 
         mGraph.layout(mLeftPadding, mTopPadding, w - mRightPadding, (int) (h - mLegendHeight - mBottomPadding));
-        mGraphOverlay.layout(mLeftPadding, mTopPadding, w - mRightPadding, (int) (h - mLegendHeight - mBottomPadding));
+        mGraph.setBackgroundColor(getResources().getColor(android.R.color.holo_purple));
+
+        Log.d(VIEW_LOG_TAG, "onSizeChanged, mGraphOverlay.layout(" +
+                "l: " + mLeftPadding + ", t: " + mTopPadding + ", r: " + (w - mRightPadding) + ", b: " + ((int) (h - mLegendHeight - mBottomPadding)) + ") <= Pixel");
+
         mLegend.layout(mLeftPadding, (int) (h - mLegendHeight - mBottomPadding), w - mRightPadding, h - mBottomPadding);
     }
 
@@ -230,16 +233,12 @@ public abstract class BaseChart extends ViewGroup {
         mGraph = new Graph(getContext());
         addView(mGraph);
 
-        mGraphOverlay = new GraphOverlay(getContext());
-        addView(mGraphOverlay);
-
         mLegend = new Legend(getContext());
         addView(mLegend);
     }
 
     /**
-     * Should be called after new data is inserted. Will be automatically called, when the view dimensions
-     * has changed.
+     * 새로운 데이타가 삽입되었을 때. 그리고 View의 Dimension이 변경되었을 때 자동으로 호출된다.
      */
     protected void onDataChanged() {
         invalidateGlobal();
@@ -250,15 +249,11 @@ public abstract class BaseChart extends ViewGroup {
      */
     protected final void invalidateGlobal() {
         mGraph.invalidate();
-        mGraphOverlay.invalidate();
         mLegend.invalidate();
     }
 
     protected final void invalidateGraph() {
         mGraph.invalidate();
-    }
-    protected final void invalidateGraphOverlay() {
-        mGraphOverlay.invalidate();
     }
     protected final void invalidateLegend() {
         mLegend.invalidate();
@@ -272,23 +267,11 @@ public abstract class BaseChart extends ViewGroup {
 
     }
 
-    protected void onGraphOverlayDraw(Canvas _Canvas) {
-
-    }
-
     protected void onLegendDraw(Canvas _Canvas) {
 
     }
 
-    protected boolean onGraphOverlayTouchEvent(MotionEvent _Event) {
-        return super.onTouchEvent(_Event);
-    }
-
     protected void onGraphSizeChanged(int w, int h, int oldw, int oldh) {
-
-    }
-
-    protected void onGraphOverlaySizeChanged(int w, int h, int oldw, int oldh) {
 
     }
 
@@ -328,40 +311,6 @@ public abstract class BaseChart extends ViewGroup {
             mGraphWidth = w;
             mGraphHeight = h;
             onGraphSizeChanged(w, h, oldw, oldh);
-        }
-        @Override
-        public boolean performClick() {
-            return super.performClick();
-        }
-    }
-
-    //##############################################################################################
-    // GraphOverlay
-    //##############################################################################################
-
-    protected class GraphOverlay extends View {
-        private GraphOverlay(Context context) {
-            super(context);
-        }
-        public void accelerate() {
-            Utils.setLayerToHW(this);
-        } // (consumes memory)
-        public void decelerate() {
-            Utils.setLayerToSW(this);
-        } // (releases memory)
-        @Override
-        protected void onDraw(Canvas canvas) {
-            super.onDraw(canvas);
-            onGraphOverlayDraw(canvas);
-        }
-        @Override
-        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-            super.onSizeChanged(w, h, oldw, oldh);
-            onGraphOverlaySizeChanged(w, h, oldw, oldh);
-        }
-        @Override
-        public boolean onTouchEvent(MotionEvent event) {
-            return onGraphOverlayTouchEvent(event);
         }
         @Override
         public boolean performClick() {

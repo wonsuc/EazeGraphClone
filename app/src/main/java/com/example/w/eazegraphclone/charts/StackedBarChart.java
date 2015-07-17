@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.example.w.eazegraphclone.R;
@@ -32,24 +33,17 @@ public class StackedBarChart extends BaseBarChart {
     private static final String LOG_TAG = StackedBarChart.class.getSimpleName();
 
     public static final float   DEF_TEXT_SIZE       = 12f;
-    public static final boolean DEF_SHOW_SEPARATORS = false;
-    public static final float   DEF_SEPARATOR_WIDTH = 2f;
 
-    private Paint                  mSeperatorPaint;
     private Paint                  mTextPaint;
 
     private List<StackedBarModel>  mData;
 
     private float                  mTextSize;
-    private boolean                mShowSeparators;
-    private float                  mSeparatorWidth;
 
     public StackedBarChart(Context context) {
         super(context);
 
         mTextSize       = Utils.dpToPx(DEF_TEXT_SIZE);
-        mShowSeparators = DEF_SHOW_SEPARATORS;
-        mSeparatorWidth = Utils.dpToPx(DEF_SEPARATOR_WIDTH);
 
         initializeGraph();
     }
@@ -63,8 +57,6 @@ public class StackedBarChart extends BaseBarChart {
         );
         try {
             mTextSize       = a.getDimension(R.styleable.StackedBarChart_egBarTextSize,     Utils.dpToPx(DEF_TEXT_SIZE));
-            mShowSeparators = a.getBoolean(R.styleable.StackedBarChart_egShowSeparators,    DEF_SHOW_SEPARATORS);
-            mSeparatorWidth = a.getDimension(R.styleable.StackedBarChart_egSeparatorWidth,  Utils.dpToPx(DEF_SEPARATOR_WIDTH));
         } finally {
             // release the TypedArray so that it can be reused.
             a.recycle();
@@ -86,21 +78,6 @@ public class StackedBarChart extends BaseBarChart {
      */
     public void setTextSize(float _textSize) {
         mTextSize = Utils.dpToPx(_textSize);
-        onDataChanged();
-    }
-
-    public boolean isShowSeparators() {
-        return mShowSeparators;
-    }
-    public void setShowSeparators(boolean _showSeparators) {
-        mShowSeparators = _showSeparators;
-        invalidateGlobal();
-    }
-    public float getSeparatorWidth() {
-        return mSeparatorWidth;
-    }
-    public void setSeparatorWidth(float _separatorWidth) {
-        mSeparatorWidth = _separatorWidth;
         onDataChanged();
     }
 
@@ -150,18 +127,13 @@ public class StackedBarChart extends BaseBarChart {
     }
 
     /**
-     * This is the main entry point after the graph has been inflated. Used to initialize the graph
-     * and its corresponding members.
+     * Graph가 xml로부터 inflate되고 난 이후에 실행되는 Entry point 메서드. 그래프를 초기화하고 이에 해당하는
+     * 멤버필드를 초기화 하기 위해 사용되었다.
      */
     @Override
     protected void initializeGraph() {
         super.initializeGraph();
         mData = new ArrayList<>();
-
-        mSeperatorPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mSeperatorPaint.setStyle(Paint.Style.FILL_AND_STROKE);
-        mSeperatorPaint.setStrokeWidth(mSeparatorWidth);
-        mSeperatorPaint.setColor(0xFFFFFFFF);
 
         mTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mTextPaint.setTextSize(mTextSize);
@@ -187,8 +159,6 @@ public class StackedBarChart extends BaseBarChart {
 
     /**
      * 새로운 데이타가 삽입되었을 때. 그리고 View의 Dimension이 변경되었을 때 자동으로 호출된다.
-     * Should be called after new data is inserted. Will be automatically called, when the view dimensions
-     * has changed.
      */
     @Override
     protected void onDataChanged() {
@@ -207,10 +177,12 @@ public class StackedBarChart extends BaseBarChart {
         // 최상위 Loop문
         for (StackedBarModel model : mData) {
             float lastY = 0;
+            // 하나의 StackedBar의 값들을 모두 더한 값
             float cumulatedValues = 0;
 
             // used if seperators are enabled, to prevent information loss
-            int usableGraphHeight = mGraphHeight - (int) (mSeparatorWidth * (model.getBars().size() - 1));
+            // StackedBar의 갯수에서 1을 뺀 값(예를 들어 3개일 때는 2개)에서 Separator의 넓이를 곱한 값을 총 그래프 높이에서 뺀 값이 실제 보여지는 그래프의 높이 값임.
+            Log.d(LOG_TAG, "calculateBounds, mGraphHeight: " + mGraphHeight);
 
             for (BarModel barModel : model.getBars()) {
                 cumulatedValues += barModel.getValue();
@@ -221,20 +193,29 @@ public class StackedBarChart extends BaseBarChart {
             // Loop문
             for (BarModel barModel : model.getBars()) {
                 // calculate topX for the StackedBarModel part
-                float newY = ((barModel.getValue() * usableGraphHeight) / cumulatedValues) + lastY;
+                // 가장 높은 그래프의 값을 정해서 그 값을 기준으로 나눠야 함. 아래 코드의 경우 usableGraphHeight 가장 높은 값으로 변경
+                //float newY = ((barModel.getValue() * usableGraphHeight) / cumulatedValues) + lastY;
+                // 하나의 바의 높이를 구한 뒤 거기에 사용가능한 바 그래프의 높이를 곱한다. 거기서 모든 값들을 더한 값으로 나눈다.
+                // 그리고 LastY를 구하는데 LastY는 StackedBar에서 이전 바의 top 값이다.
+                float newY = ((barModel.getValue() * mGraphHeight) / cumulatedValues) + lastY;
+                Log.d(LOG_TAG, "calculateBounds, newY: " + newY);
                 float height = newY - lastY;
                 Rect textBounds = new Rect();
                 // 해당 Bar의 값
                 String value = String.valueOf(barModel.getValue());
 
                 mTextPaint.getTextBounds(value, 0, value.length(), textBounds);
+                //Log.d(LOG_TAG, "calculateBounds, textBounds: " + textBounds);
 
                 if (textBounds.height() * 1.5f < height && textBounds.width() * 1.1f < _Width) {
                     barModel.setShowValue(true);
+                    // ??
                     barModel.setValueBounds(textBounds);
                 }
 
                 barModel.setBarBounds(new RectF(last, lastY, last + _Width, newY));
+                Log.d(LOG_TAG, "calculateBounds, barModel.getBarBounds(): " + barModel.getBarBounds());
+                // ??
                 lastY = newY;
             }
             model.setLegendBounds(new RectF(last, 0, last + _Width, mLegendHeight));
@@ -282,11 +263,6 @@ public class StackedBarChart extends BaseBarChart {
                 }
 
                 lastBottom = lastTop;
-
-                // mShowSeparators가 존재하고
-                if (mShowSeparators && index < model.getBars().size() - 1) {
-                    lastBottom -= mSeparatorWidth;
-                }
             }
 
         }
